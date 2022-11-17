@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Infrastructure
 * Removed half of the CI to ensure that changelog validation works
 * Older lint variant checked
+* Disabled changelog for pushes
 
 ## [3.6.0] - 2022-09-20
 

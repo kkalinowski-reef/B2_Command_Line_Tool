@@ -33,38 +33,3 @@ jobs:
         uses: zattoo/changelog@v1
         with:
           token: ${{ github.token }}
-  build:
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up Python ${{ env.PYTHON_DEFAULT_VERSION }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
-      - name: Install dependencies
-        run: python -m pip install --upgrade nox pip setuptools
-      - name: Build the distribution
-        run: nox -vs build
-  doc:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Set up Python ${{ env.PYTHON_DEFAULT_VERSION }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
-      - name: Install dependencies
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y graphviz plantuml
-          python -m pip install --upgrade nox pip setuptools
-      - name: Build the docs
-        run: nox --non-interactive -vs doc
