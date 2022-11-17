@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * Stop using b2sdk.v1 in arg_parser.py
 
+### Infrastructure
+* Removed half of the CI to ensure that changelog validation works
+
 ## [3.6.0] - 2022-09-20
 
 ### Added
