@@ -71,7 +71,7 @@ jobs:
         run: nox -vs bundle
       - name: Sign the bundle
         id: sign
-        run: nox -vs sign
+        run: nox -vs sign >> $GITHUB_OUTPUT
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -100,14 +100,14 @@ jobs:
         run: python -m pip install --upgrade nox pip setuptools
       - name: Bundle the distribution
         id: bundle
-        run: nox -vs bundle
+        run: nox -vs bundle >> $GITHUB_OUTPUT
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ needs.deploy.outputs.version }}
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
-          files: ${{ steps.sign.outputs.asset_path }}
+          files: ${{ steps.bundle.outputs.asset_path }}
   deploy-windows-bundle:
     needs: deploy
     env:
@@ -126,7 +126,7 @@ jobs:
         run: python -m pip install --upgrade nox pip setuptools
       - name: Bundle the distribution
         id: bundle
-        run: nox -vs bundle
+        run: nox -vs bundle >> $GITHUB_OUTPUT
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -134,19 +134,3 @@ jobs:
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
           files: ${{ steps.sign.outputs.asset_path }}
-  create-file-hashes:
-    needs: [deploy-windows-bundle, deploy-linux-bundle, deploy-macos-bundle]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: MCJack123/ghaction-generate-release-hashes@v4
-        with:
-          hash-type: sha256
-          file-name: hashes.txt
-          get-assets: true
-      - name: Upload hashes to the GitHub release
-        uses: softprops/action-gh-release@v1
-        with:
-          name: ${{ needs.deploy.outputs.version }}
-          draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
-          prerelease: false
-          files: hashes.txt

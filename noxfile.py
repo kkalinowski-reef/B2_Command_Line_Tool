@@ -252,8 +252,8 @@ def bundle(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = glob('dist/*')[0]
-        print('::set-output name=asset_path::', asset_path, sep='')
+        asset_path = 'dist/*'
+        print(f'asset_path={asset_path}')
 
 
 @nox.session(python=False)
@@ -331,8 +331,8 @@ def sign(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = glob('dist/*')[0]
-        print('::set-output name=asset_path::', asset_path, sep='')
+        asset_path = 'dist/*'
+        print(f'asset_path={asset_path}')
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
