@@ -10,13 +10,12 @@
 
 import io
 import os
-import pkg_resources
 import platform
 import subprocess
-
 from glob import glob
 
 import nox
+import pkg_resources
 
 CI = os.environ.get('CI') is not None
 CD = CI and (os.environ.get('CD') is not None)
@@ -218,18 +217,18 @@ def cover(session):
 def build(session):
     """Build the distribution."""
     # TODO: consider using wheel as well
-    session.run('pip', 'install', *REQUIREMENTS_BUILD)
-    session.run('python', 'setup.py', 'check', '--metadata', '--strict')
-    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True)
-    session.run('python', 'setup.py', 'sdist', *session.posargs)
+    session.run('pip', 'install', *REQUIREMENTS_BUILD, silent=True)
+    session.run('python', 'setup.py', 'check', '--metadata', '--strict', silent=True)
+    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True, silent=True)
+    session.run('python', 'setup.py', 'sdist', *session.posargs, silent=True)
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = glob('dist/*')[0]
-        print('::set-output name=asset_path::', asset_path, sep='')
+        asset_path = 'dist/*'
+        print(f'asset_path={asset_path}')
 
         version = os.environ['GITHUB_REF'].replace('refs/tags/v', '')
-        print('::set-output name=version::', version, sep='')
+        print(f'version={version}')
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
@@ -242,13 +241,20 @@ def bundle(session):
     if SYSTEM == 'darwin':
         session.posargs.extend(['--osx-bundle-identifier', OSX_BUNDLE_IDENTIFIER])
 
-    session.run('pyinstaller', '--onefile', *session.posargs, 'b2.spec')
+    session.run('pyinstaller', '--onefile', *session.posargs, 'b2.spec', silent=True)
 
     if SYSTEM == 'linux' and not NO_STATICX:
         session.run(
-            'staticx', '--no-compress', '--strip', '--loglevel', 'INFO', 'dist/b2', 'dist/b2-static'
+            'staticx',
+            '--no-compress',
+            '--strip',
+            '--loglevel',
+            'INFO',
+            'dist/b2',
+            'dist/b2-static',
+            silent=True,
         )
-        session.run('mv', '-f', 'dist/b2-static', 'dist/b2', external=True)
+        session.run('mv', '-f', 'dist/b2-static', 'dist/b2', external=True, silent=True)
 
     # Set outputs for GitHub Actions
     if CI:
