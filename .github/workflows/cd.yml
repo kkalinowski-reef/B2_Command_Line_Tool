@@ -101,22 +101,6 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle
-      - name: Import certificate
-        uses: apple-actions/import-codesign-certs@v1
-        with:
-          p12-file-base64: ${{ env.B2_OSX_CODE_SIGNING_CERTIFICATE }}
-          p12-password: ${{ env.B2_OSX_CODE_SIGNING_CERTIFICATE_PASSWORD }}
-      - name: Sign the bundle
-        id: sign
-        run: nox -vs sign -- '${{ env.B2_OSX_CODE_SIGNING_CERTIFICATE_NAME }}'
-      - name: Notarize the bundle
-        if: ${{ env.B2_OSX_NOTARY_NAME != '' }}
-        uses: devbotsxyz/xcode-notarize@v1
-        with:
-          product-path: ${{ steps.sign.outputs.asset_path }}
-          appstore-connect-username: ${{ env.B2_OSX_NOTARY_NAME }}
-          appstore-connect-password: ${{ env.B2_OSX_NOTARY_PASSWORD }}
-          primary-bundle-id: com.backblaze.b2
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -143,15 +127,6 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle
-      - name: Import certificate
-        id: windows_import_cert
-        uses: timheuer/base64-to-file@v1
-        with:
-          fileName: 'cert.pfx'
-          encodedString: ${{ secrets.B2_WINDOWS_CODE_SIGNING_CERTIFICATE }}
-      - name: Sign the bundle
-        id: sign
-        run: nox -vs sign -- '${{ steps.windows_import_cert.outputs.filePath }}' '${{ env.B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD }}'
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -167,6 +142,7 @@ jobs:
         with:
           hash-type: sha256
           file-name: hashes.txt
+          get-assets: true
       - name: Upload hashes to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
