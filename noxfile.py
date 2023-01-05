@@ -7,9 +7,10 @@
 # License https://www.backblaze.com/using_b2_code.html
 #
 ######################################################################
-
+import hashlib
 import io
 import os
+import pathlib
 import platform
 import subprocess
 from glob import glob
@@ -339,6 +340,24 @@ def sign(session):
     if CI:
         asset_path = 'dist/*'
         print(f'asset_path={asset_path}')
+
+
+@nox.session(python=PYTHON_DEFAULT_VERSION)
+def make_dist_digest(_session):
+    wanted_algos = ['sha256', 'sha3_256']
+    available_algos = [algo for algo in wanted_algos if algo in hashlib.algorithms_available]
+
+    # I assume that these files fit into ram.
+    for dist_file in pathlib.Path('dist').glob('*'):
+        # Suffix starts with '.'
+        if dist_file.suffix[1:] in available_algos:
+            continue
+
+        data = dist_file.read_bytes()
+
+        for algo in available_algos:
+            algo_worker = hashlib.new(algo, data)
+            dist_file.with_suffix(f'{dist_file.suffix}.{algo}').write_text(algo_worker.hexdigest())
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)

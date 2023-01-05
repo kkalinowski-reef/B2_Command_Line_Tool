@@ -18,11 +18,11 @@ jobs:
     outputs:
       version: ${{ steps.build.outputs.version }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python ${{ env.PYTHON_DEFAULT_VERSION }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
       - name: Install dependencies
@@ -58,7 +58,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Install dependencies
@@ -72,6 +72,9 @@ jobs:
       - name: Sign the bundle
         id: sign
         run: nox -vs sign >> $GITHUB_OUTPUT
+      - name: Generate hashes
+        id: hashes
+        run: nox -vs make_dist_digest
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -89,11 +92,11 @@ jobs:
       B2_OSX_NOTARY_PASSWORD: ${{ secrets.B2_OSX_NOTARY_PASSWORD }}
     runs-on: macos-10.15
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python ${{ env.PYTHON_DEFAULT_VERSION }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
       - name: Install dependencies
@@ -101,6 +104,9 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle >> $GITHUB_OUTPUT
+      - name: Generate hashes
+        id: hashes
+        run: nox -vs make_dist_digest
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
@@ -115,11 +121,11 @@ jobs:
       B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD }}
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Python ${{ env.PYTHON_DEFAULT_VERSION }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_DEFAULT_VERSION }}
       - name: Install dependencies
@@ -127,6 +133,9 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle >> $GITHUB_OUTPUT
+      - name: Generate hashes
+        id: hashes
+        run: nox -vs make_dist_digest
       - name: Upload the bundle to the GitHub release
         uses: softprops/action-gh-release@v1
         with:
