@@ -159,3 +159,18 @@ jobs:
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
           files: ${{ steps.sign.outputs.asset_path }}
+  create-file-hashes:
+    needs: [deploy-windows-bundle, deploy-linux-bundle, deploy-macos-bundle]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: MCJack123/ghaction-generate-release-hashes@v4
+        with:
+          hash-type: sha256
+          file-name: hashes.txt
+      - name: Upload hashes to the GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.deploy.outputs.version }}
+          draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
+          prerelease: false
+          files: hashes.txt
