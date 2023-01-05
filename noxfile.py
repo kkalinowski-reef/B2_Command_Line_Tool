@@ -242,7 +242,15 @@ def bundle(session):
     if SYSTEM == 'darwin':
         session.posargs.extend(['--osx-bundle-identifier', OSX_BUNDLE_IDENTIFIER])
 
-    session.run('pyinstaller', '--onefile', *session.posargs, 'b2.spec', silent=True)
+    with open(os.devnull, 'w') as null_device:
+        session.run(
+            'pyinstaller',
+            '--onefile',
+            *session.posargs,
+            'b2.spec',
+            stderr=null_device,
+            stdout=null_device,
+        )
 
     if SYSTEM == 'linux' and not NO_STATICX:
         session.run(
@@ -344,20 +352,28 @@ def sign(session):
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
 def make_dist_digest(_session):
-    wanted_algos = ['sha256', 'sha3_256']
+    wanted_algos = ['sha256', 'sha512', 'sha3_256', 'sha3_512']
     available_algos = [algo for algo in wanted_algos if algo in hashlib.algorithms_available]
+    longest_algo_name = max([len(elem) for elem in available_algos])
+    line_format = '{algo:<%s} {hash_value}' % longest_algo_name
+
+    hashes_file_suffix = '_hashes'
 
     # I assume that these files fit into ram.
     for dist_file in pathlib.Path('dist').glob('*'):
-        # Suffix starts with '.'
-        if dist_file.suffix[1:] in available_algos:
+        if dist_file.stem.endswith(hashes_file_suffix):
             continue
 
+        output_lines = []
         data = dist_file.read_bytes()
 
         for algo in available_algos:
-            algo_worker = hashlib.new(algo, data)
-            dist_file.with_suffix(f'{dist_file.suffix}.{algo}').write_text(algo_worker.hexdigest())
+            hash_value = hashlib.new(algo, data).hexdigest()
+            output_lines.append(line_format.format(algo=algo, hash_value=hash_value))
+
+        dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt').write_text(
+            '\n'.join(output_lines)
+        )
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
