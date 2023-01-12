@@ -145,4 +145,4 @@ jobs:
           name: ${{ needs.deploy.outputs.version }}
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
-          files: ${{ steps.sign.outputs.asset_path }}
+          files: ${{ steps.bundle.outputs.asset_path }}

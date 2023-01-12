@@ -347,7 +347,7 @@ def sign(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = 'dist/*'
+        asset_path = str(pathlib.Path('dist') / '*')
         print(f'asset_path={asset_path}')
 
 
