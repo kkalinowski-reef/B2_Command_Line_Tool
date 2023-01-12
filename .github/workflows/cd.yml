@@ -71,7 +71,7 @@ jobs:
           python -m pip install --upgrade nox pip setuptools
       - name: Bundle the distribution
         id: bundle
-        run: nox -vs bundle
+        run: nox -vs bundle >> $GITHUB_OUTPUT
       - name: Sign the bundle
         id: sign
         run: nox -vs sign >> $GITHUB_OUTPUT
@@ -107,6 +107,9 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle >> $GITHUB_OUTPUT
+      - name: Sign the bundle
+        id: sign
+        run: nox -vs sign -- '${{ env.B2_OSX_CODE_SIGNING_CERTIFICATE_NAME }}' >> $GITHUB_OUTPUT
       - name: Generate hashes
         id: hashes
         run: nox -vs make_dist_digest
@@ -116,7 +119,7 @@ jobs:
           name: ${{ needs.deploy.outputs.version }}
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
-          files: ${{ steps.bundle.outputs.asset_path }}
+          files: ${{ steps.sign.outputs.asset_path }}
   deploy-windows-bundle:
     needs: deploy
     env:
@@ -136,6 +139,9 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle >> $GITHUB_OUTPUT
+      - name: Sign the bundle
+        id: sign
+        run: nox -vs sign -- '${{ steps.windows_import_cert.outputs.filePath }}' '${{ env.B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD }}' >> $GITHUB_OUTPUT
       - name: Generate hashes
         id: hashes
         run: nox -vs make_dist_digest
@@ -145,4 +151,4 @@ jobs:
           name: ${{ needs.deploy.outputs.version }}
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
-          files: ${{ steps.bundle.outputs.asset_path }}
+          files: ${{ steps.sign.outputs.asset_path }}
