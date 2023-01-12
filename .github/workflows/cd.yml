@@ -139,6 +139,9 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: nox -vs bundle >> $GITHUB_OUTPUT
+      - name: Import certificate
+        id: windows_import_cert
+        run: echo "filePath=some-path" >> $GITHUB_OUTPUT
       - name: Sign the bundle
         id: sign
         run: nox -vs sign -- '${{ steps.windows_import_cert.outputs.filePath }}' '${{ env.B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD }}' >> $GITHUB_OUTPUT
@@ -152,3 +155,5 @@ jobs:
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
           files: ${{ steps.sign.outputs.asset_path }}
+      - name: Echo variables
+        run: echo "${{ needs.deploy.outputs.version }} -- ${{ steps.sign.outputs.asset_path }} -- ${{ steps.bundle.outputs.asset_path }}"
