@@ -234,7 +234,7 @@ def build(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = pathlib.Path('dist') / '*'
+        asset_path = str(pathlib.Path('dist') / '*')
         print(f'asset_path={asset_path}')
 
         version = os.environ['GITHUB_REF'].replace('refs/tags/v', '')
@@ -262,7 +262,7 @@ def bundle(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = pathlib.Path('dist') / '*'
+        asset_path = str(pathlib.Path('dist') / '*')
         print(f'asset_path={asset_path}')
 
 
@@ -279,7 +279,7 @@ def sign(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = pathlib.Path('dist') / '*'
+        asset_path = str(next(pathlib.Path('dist').glob('*')))
         print(f'asset_path={asset_path}')
 
 
