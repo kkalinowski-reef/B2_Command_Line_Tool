@@ -235,7 +235,7 @@ def build(session):
 @nox.session(python=PYTHON_DEFAULT_VERSION)
 def bundle(session):
     """Bundle the distribution."""
-    session.run('pip', 'install', *REQUIREMENTS_BUNDLE)
+    session.run('pip', 'install', *REQUIREMENTS_BUNDLE, silent=True)
     session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True)
     install_myself(session)
 
