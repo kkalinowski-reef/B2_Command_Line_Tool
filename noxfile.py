@@ -307,7 +307,8 @@ def make_dist_digest(_session):
 
         hashes_output_file = \
             dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt')
-        hashes_output_file.write_text('\n'.join(output_lines), encoding='utf-8')
+        # I write is as bytes to avoid BOM being added on Windows.
+        hashes_output_file.write_bytes('\n'.join(output_lines).encode('ascii'))
         did_find_any_file = True
         print(dist_file, hashes_output_file)
 
