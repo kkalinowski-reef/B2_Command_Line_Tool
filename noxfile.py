@@ -234,6 +234,8 @@ def build(session):
 
     # Set outputs for GitHub Actions
     if CI:
+        # Path have to be specified with unix style slashes even for windows,
+        # otherwise glob won't find files on windows in action-gh-release.
         print('asset_path=dist/*')
 
         version = os.environ['GITHUB_REF'].replace('refs/tags/v', '')
@@ -261,6 +263,8 @@ def bundle(session):
 
     # Set outputs for GitHub Actions
     if CI:
+        # Path have to be specified with unix style slashes even for windows,
+        # otherwise glob won't find files on windows in action-gh-release.
         print('asset_path=dist/*')
 
 
@@ -277,6 +281,8 @@ def sign(session):
 
     # Set outputs for GitHub Actions
     if CI:
+        # Path have to be specified with unix style slashes even for windows,
+        # otherwise glob won't find files on windows in action-gh-release.
         print('asset_path=dist/*')
 
 
@@ -305,12 +311,11 @@ def make_dist_digest(_session):
             hash_value = hashlib.new(algo, data).hexdigest()
             output_lines.append(line_format.format(algo=algo, hash_value=hash_value))
 
-        hashes_output_file = \
-            dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt')
-        # I write is as bytes to avoid BOM being added on Windows.
-        hashes_output_file.write_bytes('\n'.join(output_lines).encode('ascii'))
+        # Writing as bytes to ensure that Windows won't add BOM to the file.
+        dist_file.with_stem(dist_file.name + hashes_file_suffix) \
+            .with_suffix('.txt') \
+            .write_bytes('\n'.join(output_lines).encode('ascii'))
         did_find_any_file = True
-        print(dist_file, hashes_output_file)
 
     if not did_find_any_file:
         raise RuntimeError(

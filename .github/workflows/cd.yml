@@ -158,5 +158,3 @@ jobs:
           draft: ${{ env.ACTIONS_STEP_DEBUG == 'true' }}
           prerelease: false
           files: ${{ steps.sign.outputs.asset_path }}
-      - name: Echo variables
-        run: echo "${{ needs.deploy.outputs.version }} -- ${{ steps.sign.outputs.asset_path }} -- ${{ steps.bundle.outputs.asset_path }}"
