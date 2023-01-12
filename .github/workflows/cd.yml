@@ -138,12 +138,15 @@ jobs:
         run: python -m pip install --upgrade nox pip setuptools
       - name: Bundle the distribution
         id: bundle
+        shell: bash
         run: nox -vs bundle >> $GITHUB_OUTPUT
       - name: Import certificate
         id: windows_import_cert
+        shell: bash
         run: echo "filePath=some-path" >> $GITHUB_OUTPUT
       - name: Sign the bundle
         id: sign
+        shell: bash
         run: nox -vs sign -- '${{ steps.windows_import_cert.outputs.filePath }}' '${{ env.B2_WINDOWS_CODE_SIGNING_CERTIFICATE_PASSWORD }}' >> $GITHUB_OUTPUT
       - name: Generate hashes
         id: hashes
