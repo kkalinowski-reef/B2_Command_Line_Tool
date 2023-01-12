@@ -234,7 +234,8 @@ def build(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        print('asset_path=dist/*')
+        asset_path = pathlib.Path('dist') / '*'
+        print(f'asset_path={asset_path}')
 
         version = os.environ['GITHUB_REF'].replace('refs/tags/v', '')
         print(f'version={version}')
@@ -261,7 +262,8 @@ def bundle(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        print('asset_path=dist/*')
+        asset_path = pathlib.Path('dist') / '*'
+        print(f'asset_path={asset_path}')
 
 
 @nox.session(python=False)
@@ -349,7 +351,8 @@ def sign(session):
 
     # Set outputs for GitHub Actions
     if CI:
-        print('asset_path=dist/*')
+        asset_path = pathlib.Path('dist') / '*'
+        print(f'asset_path={asset_path}')
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
