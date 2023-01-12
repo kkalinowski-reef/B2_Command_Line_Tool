@@ -377,10 +377,11 @@ def make_dist_digest(_session):
             hash_value = hashlib.new(algo, data).hexdigest()
             output_lines.append(line_format.format(algo=algo, hash_value=hash_value))
 
-        dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt').write_text(
-            '\n'.join(output_lines)
-        )
+        hashes_output_file = \
+            dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt')
+        hashes_output_file.write_text('\n'.join(output_lines))
         did_find_any_file = True
+        print(dist_file, hashes_output_file)
 
     if not did_find_any_file:
         raise RuntimeError(
