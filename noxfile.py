@@ -48,6 +48,7 @@ REQUIREMENTS_TEST = [
 ]
 REQUIREMENTS_BUILD = ['setuptools>=20.2']
 REQUIREMENTS_BUNDLE = [
+    # 4.7.0 still supports old --onefile --osx-bundle-identifier, 5.7 supports Python 3.11
     'pyinstaller==4.7.0',
     "patchelf-wrapper==1.2.0;platform_system=='Linux'",
     "staticx==0.13.5;platform_system=='Linux'",
@@ -77,7 +78,7 @@ def install_myself(session, extras=None):
     if extras:
         arg += '[%s]' % ','.join(extras)
 
-    session.run('pip', 'install', '-e', arg)
+    session.run('pip', 'install', '-e', arg, silent=True)
 
     if INSTALL_SDK_FROM:
         cwd = os.getcwd()
