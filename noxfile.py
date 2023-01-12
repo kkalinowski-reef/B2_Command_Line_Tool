@@ -7,8 +7,8 @@
 # License https://www.backblaze.com/using_b2_code.html
 #
 ######################################################################
+
 import hashlib
-import io
 import os
 import pathlib
 import platform
@@ -48,7 +48,6 @@ REQUIREMENTS_TEST = [
 ]
 REQUIREMENTS_BUILD = ['setuptools>=20.2']
 REQUIREMENTS_BUNDLE = [
-    # 4.7.0 still supports old --onefile --osx-bundle-identifier, 5.7 supports Python 3.11
     'pyinstaller==4.7.0',
     "patchelf-wrapper==1.2.0;platform_system=='Linux'",
     "staticx==0.13.5;platform_system=='Linux'",
@@ -66,9 +65,18 @@ nox.options.sessions = [
     'test',
 ]
 
+run_kwargs = {}
+
 # In CI, use Python interpreter provided by GitHub Actions
 if CI:
     nox.options.force_venv_backend = 'none'
+
+    # Inside the CI we need to silence most of the outputs to be able to use GITHUB_OUTPUT properly.
+    # Nox passes `stderr` and `stdout` directly to subprocess.Popen.
+    run_kwargs = dict(
+        stderr=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+    )
 
 
 def install_myself(session, extras=None):
@@ -78,7 +86,7 @@ def install_myself(session, extras=None):
     if extras:
         arg += '[%s]' % ','.join(extras)
 
-    session.run('pip', 'install', '-e', arg, silent=True)
+    session.run('pip', 'install', '-e', arg, **run_kwargs)
 
     if INSTALL_SDK_FROM:
         cwd = os.getcwd()
@@ -145,7 +153,7 @@ def lint(session):
     # the tool will still work if the SDK was installed from the master branch or a different directory.
     updated_requirements = os.path.join(session.create_tmp(), 'requirements.txt')
     with open('requirements.txt', 'r') as orig_req_file, \
-            open(updated_requirements, 'w') as updated_req_file:
+        open(updated_requirements, 'w') as updated_req_file:
         requirements = pkg_resources.parse_requirements(orig_req_file)
         for requirement in requirements:
             if requirement.project_name == "b2sdk":
@@ -219,15 +227,14 @@ def cover(session):
 def build(session):
     """Build the distribution."""
     # TODO: consider using wheel as well
-    session.run('pip', 'install', *REQUIREMENTS_BUILD, silent=True)
-    session.run('python', 'setup.py', 'check', '--metadata', '--strict', silent=True)
-    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True, silent=True)
-    session.run('python', 'setup.py', 'sdist', *session.posargs, silent=True)
+    session.run('pip', 'install', *REQUIREMENTS_BUILD, **run_kwargs)
+    session.run('python', 'setup.py', 'check', '--metadata', '--strict', **run_kwargs)
+    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True, **run_kwargs)
+    session.run('python', 'setup.py', 'sdist', *session.posargs, **run_kwargs)
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = 'dist/*'
-        print(f'asset_path={asset_path}')
+        print('asset_path=dist/*')
 
         version = os.environ['GITHUB_REF'].replace('refs/tags/v', '')
         print(f'version={version}')
@@ -236,40 +243,25 @@ def build(session):
 @nox.session(python=PYTHON_DEFAULT_VERSION)
 def bundle(session):
     """Bundle the distribution."""
-    session.run('pip', 'install', *REQUIREMENTS_BUNDLE, silent=True)
-    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True)
+    session.run('pip', 'install', *REQUIREMENTS_BUNDLE, **run_kwargs)
+    session.run('rm', '-rf', 'build', 'dist', 'b2.egg-info', external=True, **run_kwargs)
     install_myself(session)
 
     if SYSTEM == 'darwin':
         session.posargs.extend(['--osx-bundle-identifier', OSX_BUNDLE_IDENTIFIER])
 
-    with open(os.devnull, 'w') as null_device:
-        session.run(
-            'pyinstaller',
-            '--onefile',
-            *session.posargs,
-            'b2.spec',
-            stderr=null_device,
-            stdout=null_device,
-        )
+    session.run('pyinstaller', '--onefile', *session.posargs, 'b2.spec', **run_kwargs)
 
     if SYSTEM == 'linux' and not NO_STATICX:
         session.run(
-            'staticx',
-            '--no-compress',
-            '--strip',
-            '--loglevel',
-            'INFO',
-            'dist/b2',
-            'dist/b2-static',
-            silent=True,
+            'staticx', '--no-compress', '--strip', '--loglevel', 'INFO', 'dist/b2',
+            'dist/b2-static', **run_kwargs
         )
-        session.run('mv', '-f', 'dist/b2-static', 'dist/b2', external=True, silent=True)
+        session.run('mv', '-f', 'dist/b2-static', 'dist/b2', external=True, **run_kwargs)
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = 'dist/*'
-        print(f'asset_path={asset_path}')
+        print('asset_path=dist/*')
 
 
 @nox.session(python=False)
@@ -277,7 +269,7 @@ def sign(session):
     """Sign the bundled distribution (macOS and Windows only)."""
 
     def sign_darwin(cert_name):
-        session.run('security', 'find-identity', external=True)
+        session.run('security', 'find-identity', external=True, **run_kwargs)
         session.run(
             'codesign',
             '--deep',
@@ -293,12 +285,13 @@ def sign(session):
             '--sign',
             cert_name,
             'dist/b2',
-            external=True
+            external=True,
+            **run_kwargs
         )
-        session.run('codesign', '--verify', '--verbose', 'dist/b2', external=True)
+        session.run('codesign', '--verify', '--verbose', 'dist/b2', external=True, **run_kwargs)
 
     def sign_windows(cert_file, cert_password):
-        session.run('certutil', '-f', '-p', cert_password, '-importpfx', cert_file)
+        session.run('certutil', '-f', '-p', cert_password, '-importpfx', cert_file, **run_kwargs)
         session.run(
             WINDOWS_SIGNTOOL_PATH,
             'sign',
@@ -313,9 +306,18 @@ def sign(session):
             '/fd',
             'sha256',
             'dist/b2.exe',
-            external=True
+            external=True,
+            **run_kwargs
         )
-        session.run(WINDOWS_SIGNTOOL_PATH, 'verify', '/pa', '/all', 'dist/b2.exe', external=True)
+        session.run(
+            WINDOWS_SIGNTOOL_PATH,
+            'verify',
+            '/pa',
+            '/all',
+            'dist/b2.exe',
+            external=True,
+            **run_kwargs
+        )
 
     if SYSTEM == 'darwin':
         try:
@@ -343,12 +345,11 @@ def sign(session):
     name, ext = os.path.splitext(os.path.basename(asset_old_path))
     asset_path = 'dist/{}-{}{}'.format(name, SYSTEM, ext)
 
-    session.run('mv', '-f', asset_old_path, asset_path, external=True)
+    session.run('mv', '-f', asset_old_path, asset_path, external=True, **run_kwargs)
 
     # Set outputs for GitHub Actions
     if CI:
-        asset_path = str(pathlib.Path('dist') / '*')
-        print(f'asset_path={asset_path}')
+        print('asset_path=dist/*')
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
@@ -382,7 +383,9 @@ def make_dist_digest(_session):
         did_find_any_file = True
 
     if not did_find_any_file:
-        raise RuntimeError(f'No file found in {directory / glob_match}, but was expected to find some.')
+        raise RuntimeError(
+            f'No file found in {str(directory / glob_match)}, but was expected to find some.'
+        )
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
