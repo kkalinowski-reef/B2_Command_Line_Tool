@@ -358,10 +358,14 @@ def make_dist_digest(_session):
     longest_algo_name = max([len(elem) for elem in available_algos])
     line_format = '{algo:<%s} {hash_value}' % longest_algo_name
 
+    directory = pathlib.Path('dist')
+    glob_match = '*'
+
     hashes_file_suffix = '_hashes'
+    did_find_any_file = False
 
     # I assume that these files fit into ram.
-    for dist_file in pathlib.Path('dist').glob('*'):
+    for dist_file in directory.glob(glob_match):
         if dist_file.stem.endswith(hashes_file_suffix):
             continue
 
@@ -375,6 +379,10 @@ def make_dist_digest(_session):
         dist_file.with_stem(dist_file.name + hashes_file_suffix).with_suffix('.txt').write_text(
             '\n'.join(output_lines)
         )
+        did_find_any_file = True
+
+    if not did_find_any_file:
+        raise RuntimeError(f'No file found in {directory / glob_match}, but was expected to find some.')
 
 
 @nox.session(python=PYTHON_DEFAULT_VERSION)
