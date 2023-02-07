@@ -32,6 +32,7 @@ jobs:
         id: bundle
         run: SETUPTOOLS_SCM_DEBUG=1 nox -vs bundle
       - name: Info printing
+        if: failure()
         run: |
           git status
           git describe
