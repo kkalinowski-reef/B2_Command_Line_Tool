@@ -23,9 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           apt-get -y update
-          apt-get -y install patchelf
+          apt-get -y install patchelf git
           python -m pip install --upgrade nox pip setuptools
-          git config --global --add safe.directory '*'
       - name: Bundle the distribution
         id: bundle
         run: SETUPTOOLS_SCM_DEBUG=1 nox -vs bundle
@@ -34,7 +33,6 @@ jobs:
         run: |
           git --version
           git status
-          git describe
   test-macos-and-windows-bundle:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -60,4 +58,3 @@ jobs:
         run: |
           git --version
           git status
-          git describe
