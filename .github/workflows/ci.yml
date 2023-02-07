@@ -31,3 +31,7 @@ jobs:
       - name: Bundle the distribution
         id: bundle
         run: SETUPTOOLS_SCM_DEBUG=1 nox -vs bundle
+      - name: Info printing
+        run: |
+          git status
+          git describe
