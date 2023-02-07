@@ -30,4 +30,4 @@ jobs:
           python -m pip install --upgrade nox pip setuptools
       - name: Bundle the distribution
         id: bundle
-        run: nox -vs bundle
+        run: SETUPTOOLS_SCM_DEBUG=1 nox -vs bundle
