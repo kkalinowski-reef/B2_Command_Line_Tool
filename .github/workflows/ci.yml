@@ -11,9 +11,6 @@ env:
 
 jobs:
   test-linux-bundle:
-    env:
-      B2_TEST_APPLICATION_KEY: ${{ secrets.B2_TEST_APPLICATION_KEY }}
-      B2_TEST_APPLICATION_KEY_ID: ${{ secrets.B2_TEST_APPLICATION_KEY_ID }}
     runs-on: ubuntu-latest
     container:
       image: "python:3.11"  # can not use ${{ env.PYTHON_DEFAULT_VERSION }} here
@@ -39,10 +36,6 @@ jobs:
           git status
           git describe
   test-macos-and-windows-bundle:
-    needs: cleanup_buckets
-    env:
-      B2_TEST_APPLICATION_KEY: ${{ secrets.B2_TEST_APPLICATION_KEY }}
-      B2_TEST_APPLICATION_KEY_ID: ${{ secrets.B2_TEST_APPLICATION_KEY_ID }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
