@@ -74,10 +74,10 @@ if CI:
 
     # Inside the CI we need to silence most of the outputs to be able to use GITHUB_OUTPUT properly.
     # Nox passes `stderr` and `stdout` directly to subprocess.Popen.
-    run_kwargs = dict(
-        stderr=subprocess.DEVNULL,
-        stdout=subprocess.DEVNULL,
-    )
+    # run_kwargs = dict(
+    #     stderr=subprocess.DEVNULL,
+    #     stdout=subprocess.DEVNULL,
+    # )
 
 
 def install_myself(session, extras=None):
