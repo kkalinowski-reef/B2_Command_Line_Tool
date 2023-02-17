@@ -32,6 +32,6 @@ jobs:
       - name: Run integration tests
         if: ${{ env.B2_TEST_APPLICATION_KEY != '' && env.B2_TEST_APPLICATION_KEY_ID != '' }}
         run: |
-          nox -vs dump_license
+          pip install .[license]
+          b2 license --dump --with-packages
           python --version
-          cat ./b2/license_output.txt
