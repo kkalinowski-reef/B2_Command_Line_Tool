@@ -29,9 +29,7 @@ jobs:
           apt-get -y install patchelf
           python -m pip install --upgrade nox pip setuptools
           git config --global --add safe.directory '*'
+          pip install ".[license]"
       - name: Run integration tests
         if: ${{ env.B2_TEST_APPLICATION_KEY != '' && env.B2_TEST_APPLICATION_KEY_ID != '' }}
-        run: |
-          pip install ".[license]"
-          b2 license --dump --with-packages
-          python --version
+        run: b2 license --dump --with-packages
