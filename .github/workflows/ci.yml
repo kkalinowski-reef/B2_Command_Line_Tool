@@ -32,4 +32,4 @@ jobs:
           pip install ".[license]"
       - name: Run integration tests
         if: ${{ env.B2_TEST_APPLICATION_KEY != '' && env.B2_TEST_APPLICATION_KEY_ID != '' }}
-        run: b2 license --dump --with-packages
+        run: b2 license --with-packages
